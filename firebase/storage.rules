@@ -1,0 +1,57 @@
+rules_version = '2';
+
+// Profile photos — one per rider at profile_photos/{uid}. No file extension:
+// Storage rules can't mix a wildcard with a literal suffix in one path segment
+// (`{uid}.jpg` doesn't parse), and the extension isn't needed anyway since the
+// upload explicitly sets contentType. Readable by any signed-in user (profile
+// photos are basic identity, same tier as username/displayName — visible
+// before a friendship exists, same reasoning as the denormalized copies in
+// Firestore's usernames/ and friendRequests/ docs). Writable only by the
+// owning uid, capped at 5MB, must be an image.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /profile_photos/{uid} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // GarageSyncService — owner-only. `create`/`update` are split from
+    // `delete` because a delete has no `request.resource` to check the
+    // size/contentType of; folding that check into a single `write` rule
+    // would make every delete evaluate `null.size` and get denied.
+    match /motorcycle_photos/{uid}/{motorcycleId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /trip_routes/{uid}/{tripId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 10 * 1024 * 1024;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Feed post photos — path includes the author's uid (like the two
+    // paths above) so ownership is a direct comparison, not a cross-service
+    // lookup into Firestore to find out who authored {postId}. Readable by
+    // any signed-in rider: the post doc gates who can discover the post at
+    // all, so by the time someone has an image URL they're already allowed
+    // to see the post it belongs to.
+    match /post_images/{uid}/{postId}/{imageId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}

@@ -6,13 +6,35 @@
 	objectVersion = 110;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D72C688B3071C469004F5CAE /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = D72C688A3071C469004F5CAE /* GoogleSignIn */; };
+		D72C688D3071C469004F5CAE /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = D72C688C3071C469004F5CAE /* GoogleSignInSwift */; };
+		D72C68A0307214EE004F5CAE /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = D72C689F307214EE004F5CAE /* FirebaseCore */; };
+		D72C68A430721579004F5CAE /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = D72C68A330721579004F5CAE /* FirebaseAuth */; };
+		D72C68A63072157E004F5CAE /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = D72C68A53072157E004F5CAE /* FirebaseFirestore */; };
+		D72C68B630722C93004F5CAE /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = D72C68B530722C93004F5CAE /* FirebaseStorage */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		D72C683A307032F6004F5CAE /* MotoLog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MotoLog.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		D72C68883071C330004F5CAE /* Exceptions for "MotoLog" folder in "MotoLog" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = D72C6839307032F6004F5CAE /* MotoLog */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D72C683C307032F6004F5CAE /* MotoLog */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D72C68883071C330004F5CAE /* Exceptions for "MotoLog" folder in "MotoLog" target */,
+			);
 			path = MotoLog;
 			sourceTree = "<group>";
 		};
@@ -22,6 +44,12 @@
 		D72C6837307032F6004F5CAE /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				D72C688B3071C469004F5CAE /* GoogleSignIn in Frameworks */,
+				D72C68A0307214EE004F5CAE /* FirebaseCore in Frameworks */,
+				D72C688D3071C469004F5CAE /* GoogleSignInSwift in Frameworks */,
+				D72C68A63072157E004F5CAE /* FirebaseFirestore in Frameworks */,
+				D72C68A430721579004F5CAE /* FirebaseAuth in Frameworks */,
+				D72C68B630722C93004F5CAE /* FirebaseStorage in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -31,6 +59,7 @@
 			isa = PBXGroup;
 			children = (
 				D72C683C307032F6004F5CAE /* MotoLog */,
+				D72C689E307214EE004F5CAE /* Frameworks */,
 				D72C683B307032F6004F5CAE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +70,13 @@
 				D72C683A307032F6004F5CAE /* MotoLog.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		D72C689E307214EE004F5CAE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -60,6 +96,14 @@
 				D72C683C307032F6004F5CAE /* MotoLog */,
 			);
 			name = MotoLog;
+			packageProductDependencies = (
+				D72C688A3071C469004F5CAE /* GoogleSignIn */,
+				D72C688C3071C469004F5CAE /* GoogleSignInSwift */,
+				D72C689F307214EE004F5CAE /* FirebaseCore */,
+				D72C68A330721579004F5CAE /* FirebaseAuth */,
+				D72C68A53072157E004F5CAE /* FirebaseFirestore */,
+				D72C68B530722C93004F5CAE /* FirebaseStorage */,
+			);
 			productName = MotoLog;
 			productReference = D72C683A307032F6004F5CAE /* MotoLog.app */;
 			productType = "com.apple.product-type.application";
@@ -88,6 +132,10 @@
 			);
 			mainGroup = D72C6831307032F6004F5CAE;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D72C68893071C469004F5CAE /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				D72C689B3071D386004F5CAE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D72C683B307032F6004F5CAE /* Products */;
 			projectDirPath = "";
@@ -236,6 +284,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MotoLog/MotoLog.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = P55HKMHM4M;
@@ -244,12 +293,17 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MotoLog/Info.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "MotoLog uses your location in the background to automatically detect and track motorcycle rides, so your mileage and service schedule stay accurate without you having to start tracking by hand. You can keep using MotoLog fully with \"While Using the App\" or manual ride logging instead.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "MotoLog uses your location while the app is open to track your ride's route, mileage, and the weather along the way.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "MotoLog uses motion data to detect when you start riding, so it can track mileage automatically without you needing to open the app first.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -280,6 +334,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MotoLog/MotoLog.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = P55HKMHM4M;
@@ -288,12 +343,17 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MotoLog/Info.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "MotoLog uses your location in the background to automatically detect and track motorcycle rides, so your mileage and service schedule stay accurate without you having to start tracking by hand. You can keep using MotoLog fully with \"While Using the App\" or manual ride logging instead.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "MotoLog uses your location while the app is open to track your ride's route, mileage, and the weather along the way.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "MotoLog uses motion data to detect when you start riding, so it can track mileage automatically without you needing to open the app first.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -339,6 +399,58 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D72C68893071C469004F5CAE /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.0.0;
+			};
+		};
+		D72C689B3071D386004F5CAE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.19.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D72C688A3071C469004F5CAE /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D72C68893071C469004F5CAE /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		D72C688C3071C469004F5CAE /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D72C68893071C469004F5CAE /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
+		D72C689F307214EE004F5CAE /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D72C689B3071D386004F5CAE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		D72C68A330721579004F5CAE /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D72C689B3071D386004F5CAE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		D72C68A53072157E004F5CAE /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D72C689B3071D386004F5CAE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		D72C68B530722C93004F5CAE /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D72C689B3071D386004F5CAE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D72C6832307032F6004F5CAE /* Project object */;
 	validationLevel = 1;

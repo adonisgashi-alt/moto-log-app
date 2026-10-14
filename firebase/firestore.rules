@@ -1,0 +1,160 @@
+rules_version = '2';
+
+// MotoLog social graph — usernames, public/private profiles, friend requests.
+//
+// Schema:
+//   usernames/{usernameLowercased}        -> { uid, displayName }     (uniqueness reservation, permanent; displayName
+//                                                                       is denormalized here so basic identity is
+//                                                                       discoverable even when the full profile isn't)
+//   users/{uid}                           -> { username, displayName, photoURL, isPublic, totalMiles, bikeCount, createdAt }
+//   users/{uid}/private/profile           -> { email }               (never exposed to other users)
+//   users/{uid}/friends/{friendUid}       -> { since }                (mutual — written on both sides when a request is accepted)
+//   friendRequests/{minUid}_{maxUid}      -> { fromUid, fromDisplayName, fromUsername, toUid, status, createdAt }
+//                                             (sender identity is denormalized here too, for the same reason)
+//   users/{uid}/motorcycles/{id}           -> owner-only garage data synced from the app (GarageSyncService)
+//   users/{uid}/maintenanceItems/{id}      -> owner-only, references its motorcycle via a motorcycleId field
+//   users/{uid}/trips/{id}                 -> owner-only, references its motorcycle via a motorcycleId field
+//
+// Visibility model:
+//   - Basic identity (username, display name) is discoverable by any signed-in
+//     user via the `usernames/` collection — this is what powers finding
+//     someone to send a friend request, independent of their privacy setting.
+//   - The full profile doc (`users/{uid}`, including mileage/stats) is visible
+//     to everyone if isPublic == true; otherwise only to the owner and
+//     accepted friends. Don't read `users/{uid}` to resolve "who is this
+//     username" — it'll be permission-denied for private profiles you're not
+//     yet friends with, by design.
+//   - Email and other sensitive fields live in a separate `private` subcollection
+//     the owner alone can read, since Firestore rules can't redact individual
+//     fields within a single document read.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Deterministic pair id so A->B and B->A collapse onto the same document,
+    // which also prevents duplicate concurrent requests between the same two people.
+    function requestId(a, b) {
+      return a < b ? a + '_' + b : b + '_' + a;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isFriendOf(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid)/friends/$(request.auth.uid));
+    }
+
+    // Same visibility rule a post and its likes/comments all share: the
+    // author, their friends, or anyone if the post is public.
+    function canReadPost(data) {
+      return data.isPublic == true || request.auth.uid == data.authorUid || isFriendOf(data.authorUid);
+    }
+
+    // Username reservations. The username->uid binding is permanent (no
+    // rename/release flow yet) — the owner can still update denormalized
+    // display fields (displayName, photoURL) that ride along on this doc.
+    match /usernames/{username} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid
+        && username == username.lower()
+        && username.size() >= 3 && username.size() <= 20;
+      allow update: if isSignedIn()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == resource.data.uid;
+      allow delete: if false;
+    }
+
+    match /users/{uid} {
+      allow read: if isSignedIn()
+        && (resource.data.isPublic == true
+            || request.auth.uid == uid
+            || isFriendOf(uid));
+
+      allow create: if isSignedIn() && request.auth.uid == uid;
+
+      // Username is set once at account creation and is not editable through
+      // this document — changing it would orphan the old `usernames/` reservation.
+      allow update: if isSignedIn() && request.auth.uid == uid
+        && request.resource.data.username == resource.data.username;
+
+      // Sensitive fields (email, etc.) — owner only, never readable by other users.
+      match /private/{document=**} {
+        allow read, write: if isSignedIn() && request.auth.uid == uid;
+      }
+
+      // Accepted friends. Both sides of a friendship are written together in a
+      // single batch by whichever user accepts the pending request, so this rule
+      // has to authorize writes into the OTHER person's subcollection too —
+      // gated on an accepted friendRequest actually existing for this exact pair.
+      match /friends/{friendUid} {
+        allow read: if isSignedIn()
+          && (request.auth.uid == uid || request.auth.uid == friendUid);
+        allow create: if isSignedIn()
+          && request.auth.uid in [uid, friendUid]
+          && get(/databases/$(database)/documents/friendRequests/$(requestId(uid, friendUid))).data.status == 'accepted';
+        allow delete: if isSignedIn() && request.auth.uid in [uid, friendUid];
+      }
+
+      // Garage data (GarageSyncService) — owner-only, never shared with
+      // other riders. The website reads these directly with the same rule,
+      // signed in as the same uid.
+      match /motorcycles/{motorcycleId} {
+        allow read, write: if isSignedIn() && request.auth.uid == uid;
+      }
+      match /maintenanceItems/{itemId} {
+        allow read, write: if isSignedIn() && request.auth.uid == uid;
+      }
+      match /trips/{tripId} {
+        allow read, write: if isSignedIn() && request.auth.uid == uid;
+      }
+    }
+
+    match /friendRequests/{reqId} {
+      allow read: if isSignedIn()
+        && (request.auth.uid == resource.data.fromUid || request.auth.uid == resource.data.toUid);
+
+      allow create: if isSignedIn()
+        && request.auth.uid == request.resource.data.fromUid
+        && request.resource.data.toUid != request.auth.uid
+        && request.resource.data.status == 'pending'
+        && reqId == requestId(request.resource.data.fromUid, request.resource.data.toUid);
+
+      // Only the recipient can accept/decline; the pair in the document can't change.
+      allow update: if isSignedIn()
+        && request.auth.uid == resource.data.toUid
+        && resource.data.status == 'pending'
+        && request.resource.data.status in ['accepted', 'declined']
+        && request.resource.data.fromUid == resource.data.fromUid
+        && request.resource.data.toUid == resource.data.toUid;
+    }
+
+    // Trip-sharing feed. Visibility is Public (anyone signed in) or
+    // Friends-only, chosen per post at share time — see canReadPost().
+    match /posts/{postId} {
+      allow read: if isSignedIn() && canReadPost(resource.data);
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.authorUid;
+      allow delete: if isSignedIn() && request.auth.uid == resource.data.authorUid;
+
+      // The author fills in imageURLs right after uploading photos; anyone
+      // who can see the post can bump its like/comment counters — the
+      // likes/comments subcollection rules below are what actually gate
+      // who's allowed to like or comment in the first place.
+      allow update: if isSignedIn() && canReadPost(resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['imageURLs', 'likeCount', 'commentCount']);
+
+      match /likes/{uid} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && request.auth.uid == uid
+          && canReadPost(get(/databases/$(database)/documents/posts/$(postId)).data);
+        allow delete: if isSignedIn() && request.auth.uid == uid;
+      }
+
+      match /comments/{commentId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && request.auth.uid == request.resource.data.authorUid
+          && canReadPost(get(/databases/$(database)/documents/posts/$(postId)).data);
+      }
+    }
+  }
+}
